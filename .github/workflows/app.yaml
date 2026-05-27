@@ -1,0 +1,39 @@
+yaml
+
+name: MobileBuild
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Structure
+      run: |
+        echo '{"name": "advanced-sepsis", "version": "1.0.0"}' > package.json
+    - name: Install
+      run: |
+        npm install @capacitor/core @capacitor/cli @capacitor/android
+    - name: Capacitor
+      run: |
+        npx cap init "Advanced Sepsis" "com.advanced.sepsis" --web-dir=www
+        npx cap add android
+    - name: Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
+    - name: Compile
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+    - name: Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: advanced-sepsis-app
+        path: android/app/build/outputs/apk/debug/app-debug.apk
